@@ -1,0 +1,17 @@
+{"properties": [
+  {
+    "name": "ratelimit.capacity",
+    "type": "java.lang.String",
+    "description": "A description for 'ratelimit.capacity'"
+  },
+  {
+    "name": "ratelimit.refillRate",
+    "type": "java.lang.String",
+    "description": "A description for 'ratelimit.refillRate'"
+  },
+  {
+    "name": "ratelimit.refillRate",
+    "type": "java.lang.String",
+    "description": "A description for 'ratelimit.refillRate'"
+  }
+]}

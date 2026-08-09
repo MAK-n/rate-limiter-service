@@ -14,12 +14,21 @@ public class TokenBucket {
     }
 
     public synchronized boolean tryConsume() {
+        return consume().allowed();
+    }
+
+    /**
+     * Refills and attempts to consume a token in one synchronized step, so the
+     * check-then-decrement can't race with a concurrent call on the same bucket.
+     */
+    public synchronized RateLimitDecision consume() {
         refill();
         if (tokens >= 1) {
             tokens--;
-            return true;
+            return RateLimitDecision.allow();
         }
-        return false;
+        long retryAfterSeconds = (long) Math.ceil((1 - tokens) / refillRate);
+        return RateLimitDecision.denied(Math.max(1, retryAfterSeconds));
     }
 
     private void refill() {
