@@ -28,7 +28,8 @@ public class RedisRateLimiterRepository {
         );
 
         long allowed = result.get(0);
+        long remainingTokens = result.get(1);
         long retryAfterSeconds = result.get(2);
-        return allowed == 1 ? RateLimitDecision.allow() : RateLimitDecision.denied(retryAfterSeconds);
+        return allowed == 1 ? RateLimitDecision.allow(remainingTokens) : RateLimitDecision.denied(retryAfterSeconds);
     }
 }

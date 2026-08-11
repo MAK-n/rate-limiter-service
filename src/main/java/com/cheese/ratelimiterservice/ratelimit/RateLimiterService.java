@@ -18,7 +18,10 @@ public class RateLimiterService {
     private double refillRate;
 
 
-    public RateLimitDecision tryAcquire(String key) {
+    public RateLimitDecision tryAcquireDefault(String key) {
+        return redisRateLimiterRepository.tryAcquire(key, capacity, refillRate);
+    }
+    public RateLimitDecision tryAcquire(String key, long capacity, double refillRate) {
         return redisRateLimiterRepository.tryAcquire(key, capacity, refillRate);
     }
 }
