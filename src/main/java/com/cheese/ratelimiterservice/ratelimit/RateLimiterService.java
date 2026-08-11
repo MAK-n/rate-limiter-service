@@ -1,25 +1,24 @@
 package com.cheese.ratelimiterservice.ratelimit;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.cheese.ratelimiterservice.redis.RedisRateLimiterRepository;
+
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class RateLimiterService {
-    private final Map<String, TokenBucket> tokenBuckets = new ConcurrentHashMap<>();
+    private final RedisRateLimiterRepository redisRateLimiterRepository;
 
-    private final long capacity;
-    private final double refillRate;
+    @Value("${ratelimit.capacity}")
+    private long capacity;
+    @Value("${ratelimit.refillRate}")
+    private double refillRate;
 
-    public RateLimiterService(@Value("${ratelimit.capacity}") long capacity, @Value("${ratelimit.refillRate}") double refillRate) {
-        this.capacity = capacity;
-        this.refillRate = refillRate;
-    }
 
     public RateLimitDecision tryAcquire(String key) {
-        TokenBucket bucket = tokenBuckets.computeIfAbsent(key, k -> new TokenBucket(capacity, refillRate));
-        return bucket.consume();
+        return redisRateLimiterRepository.tryAcquire(key, capacity, refillRate);
     }
 }
