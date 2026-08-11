@@ -25,7 +25,8 @@ public class TokenBucket {
         refill();
         if (tokens >= 1) {
             tokens--;
-            return RateLimitDecision.allow(tokens);
+            long resetSeconds = tokens >= 1 ? 0 : Math.max(1, (long) Math.ceil((1 - tokens) / refillRate));
+            return RateLimitDecision.allow(tokens, resetSeconds);
         }
         long retryAfterSeconds = (long) Math.ceil((1 - tokens) / refillRate);
         return RateLimitDecision.denied(Math.max(1, retryAfterSeconds));

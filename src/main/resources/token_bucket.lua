@@ -32,7 +32,13 @@ else
     retryAfter = math.max(1, math.ceil((1 - tokens) / refillRate))
 end
 
+-- seconds until at least one token is available again (0 if already available)
+local resetSeconds = 0
+if tokens < 1 then
+    resetSeconds = math.max(1, math.ceil((1 - tokens) / refillRate))
+end
+
 redis.call("HSET", key, "tokens", tokens, "lastRefill", nowMs)
 redis.call("EXPIRE", key, ttl)
 
-return {allowed, math.floor(tokens), retryAfter}
+return {allowed, math.floor(tokens), retryAfter, resetSeconds}

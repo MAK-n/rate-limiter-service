@@ -15,6 +15,7 @@ public class GlobalExceptionHandler {
         
         return ResponseEntity.status(429)
         .header(HttpHeaders.RETRY_AFTER, String.valueOf(ex.getRetryAfterSeconds()))
+        .header("X-RateLimit-Reset", String.valueOf(ex.getResetSeconds()))
         .body(Map.of("status", 429,
          "error", "Too Many Requests",
          "message", "You have exceeded the rate limit. Please try again later.",

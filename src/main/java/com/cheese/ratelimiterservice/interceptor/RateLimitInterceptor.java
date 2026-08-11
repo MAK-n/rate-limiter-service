@@ -8,6 +8,7 @@ import com.cheese.ratelimiterservice.exception.RateLimitExceededException;
 import com.cheese.ratelimiterservice.ratelimit.RateLimitDecision;
 import com.cheese.ratelimiterservice.ratelimit.RateLimiterService;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RateLimitInterceptor implements HandlerInterceptor{
     
     private final RateLimiterService rateLimiterService;
+    private final MeterRegistry meterRegistry;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
@@ -40,10 +42,14 @@ public class RateLimitInterceptor implements HandlerInterceptor{
         if(!decision.allowed()) {
             log.warn("Throttled {} {} for key={}, retryAfterSeconds={}",
                 request.getMethod(), request.getRequestURI(), key, decision.retryAfterSeconds());
-            throw new RateLimitExceededException(decision.retryAfterSeconds());
+            meterRegistry.counter("ratelimiter.throttled.requests",
+                "method", request.getMethod(),
+                "uri", request.getRequestURI()).increment();
+            throw new RateLimitExceededException(decision.retryAfterSeconds(), decision.resetSeconds());
         }
 
         response.setHeader("X-RateLimit-Remaining", String.valueOf(decision.remainingTokens()));
+        response.setHeader("X-RateLimit-Reset", String.valueOf(decision.resetSeconds()));
         return true;
     }
 
